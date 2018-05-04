@@ -19,6 +19,7 @@ export default class SFZoomViewConfig{
     //是否开启显示和隐藏动画
     static is_show_ani = true;
 
+
     //展示图片的类型
     static ZOOM_TYPE_IMG = 0
     static ZOOM_TYPE_VIDEO = 1
