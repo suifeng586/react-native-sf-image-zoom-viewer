@@ -17,13 +17,13 @@ import {
 } from "react-native";
 const UIManager = NativeModules.UIManager;
 const resolveAssetSource = Image.resolveAssetSource;
-import SFZoomViewConfig from './SFZoomViewConfig'
-import SFZoomShowAnimated from './SFZoomShowAnimated'
-import SFZoomImageCache from './SFZoomImageCache'
-export default class SFZoomImage extends Component {
+import SFZiCache from './tool/SFZiCache'
+import SFZiConfig from "./SFZiConfig"
+import SFZiButton from "./SFZiButton"
+export default class SFZiImage extends Component {
 
     constructor(props) {
-        super(props)
+        super(props);
         this.state=({
             loadding : false,
             isShow : false
@@ -42,10 +42,11 @@ export default class SFZoomImage extends Component {
         onHide: PropTypes.func.isRequired,
         onAniZoomEnd: PropTypes.func.isRequired,
         onAniZoomBegin: PropTypes.func.isRequired,
+        onAniZoomBeginFinish: PropTypes.func.isRequired,
     }
     componentWillMount() {
         this.isParentOuter = false;
-        this.horizontalWholeOuterCounter = 0
+        this.horizontalWholeOuterCounter = 0;
 
         this.dealImageSize();
 
@@ -60,14 +61,14 @@ export default class SFZoomImage extends Component {
             onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
 
             onPanResponderGrant: (evt, gestureState) => {
-                
+
                 this.onPanResponderGrant(evt,gestureState)
             },
             onPanResponderMove: (evt, gestureState) => {
                 this.onPanResponderMove(evt,gestureState);
                 this.onPanResponderZoom(evt,gestureState);
             },
-            onPanResponderTerminationRequest: (evt, gestureState) => true,
+            onPanResponderTerminationRequest: (evt, gestureState) => false,
             onPanResponderRelease: (evt, gestureState) => {
                 this.onPanResponderRelease(evt,gestureState)
 
@@ -91,43 +92,15 @@ export default class SFZoomImage extends Component {
         this.height = 0;
         this.aniWidth = new Animated.Value(this.width);
         this.aniHeight = new Animated.Value(this.height);
-        if (typeof(this.props.imgData.big_path)=='string'){//网络图片
-            var imgInfo = SFZoomImageCache.getImage(this.props.imgData.big_path);
-            if (!imgInfo){
-                Image.getSize(this.props.imgData.big_path,(width,height)=>{
-                    var w = this.props.cropWidth;
-                    var h = height*this.props.cropWidth/width;
-                    if (h > this.props.cropHeight){
-                        w = width*this.props.cropHeight/height;
-                        h = this.props.cropHeight;
-                    }
-                    this.width = w;
-                    this.height = h;
-                    this.aniWidth.setValue(w);
-                    this.aniHeight.setValue(h);
-
-                    SFZoomImageCache.insertImage(this.props.imgData.big_path,{width:w,height:h})
-                })
-            }else{
-                this.width = imgInfo.width;
-                this.height = imgInfo.height;
-                this.aniWidth.setValue(this.width);
-                this.aniHeight.setValue(this.height);
-            }
-
-        }else{//本地图片
-            let source = resolveAssetSource(this.props.imgData.big_path)
-            var w = this.props.cropWidth;
-            var h = source.height*this.props.cropWidth/source.width;
-            if (h > this.props.cropHeight){
-                w = source.width*this.props.cropHeight/source.height;
-                h = this.props.cropHeight;
-            }
-            this.width = w;
-            this.height = h;
-            this.aniWidth.setValue(w);
-            this.aniHeight.setValue(h);
+        if (this.props.index != this.props.firstIndex){
+            this.getImgSize((w,h)=>{
+                this.width = w;
+                this.height = h;
+                this.aniWidth.setValue(w);
+                this.aniHeight.setValue(h);
+            })
         }
+
 
         this.scale = 1;
         this.posX = 0;
@@ -159,123 +132,150 @@ export default class SFZoomImage extends Component {
 
 
 
-
-    onAniZoomEnd = (isFadeIn) => {
-        if (isFadeIn){
-            this.isShowAniFinish = true;
-            if (this.isShowAniFinish && this.isImgLoaded){
-                this.refZoomAni.hide();
-                this.setState({isShow:true})
-            }
-        }else{
-            this.onHide();
-        }
-        this.props.onAniZoomEnd(isFadeIn);
+    runAni = (toX,toY,toW,toH,callBack) => {
+        Animated.parallel([
+            Animated.timing(this.aniPosX, {
+                toValue: toX,
+                duration: SFZiConfig.show_duration,
+            }).start(),
+            Animated.timing(this.aniPosY, {
+                toValue: toY,
+                duration: SFZiConfig.show_duration,
+            }).start(),
+            Animated.timing(this.aniWidth, {
+                toValue: toW,
+                duration: SFZiConfig.show_duration,
+            }).start(),
+            Animated.timing(this.aniHeight, {
+                toValue: toH,
+                duration: SFZiConfig.show_duration,
+            }).start(callBack)
+        ]).start()
     }
-    onAniZoomBegin = (isFadeIn) => {
-        if (isFadeIn == false){
-            this.setState({isShow:false})
+    getImgSize = (callBack) =>{
+        if (typeof(this.props.imgData.source)=='string'){//网络图片
+            var imgInfo = SFZiCache.getImage(this.props.imgData.source);
+            if (!imgInfo){
+                Image.getSize(this.props.imgData.source,(width,height)=>{
+                    var w = this.props.cropWidth;
+                    var h = height*this.props.cropWidth/width;
+                    if (h > this.props.cropHeight){
+                        w = width*this.props.cropHeight/height;
+                        h = this.props.cropHeight;
+                    }
+                    callBack(w,h);
+                    SFZiCache.insertImage(this.props.imgData.source,{width:w,height:h})
+                })
+            }else{
+                callBack(imgInfo.width,imgInfo.height);
+            }
+
+        }else{//本地图片
+            let source = resolveAssetSource(this.props.imgData.source)
+            var w = this.props.cropWidth;
+            var h = source.height*this.props.cropWidth/source.width;
+            if (h > this.props.cropHeight){
+                w = source.width*this.props.cropHeight/source.height;
+                h = this.props.cropHeight;
+            }
+            callBack(w,h);
         }
-        this.props.onAniZoomBegin(isFadeIn);
     }
 
     showZoomFadeIn = () => {
-        if (SFZoomViewConfig.is_show_ani == false){
-            this.setState({isShow:true})
-            this.props.onAniZoomEnd(true);
-            return;
+        if (SFZiConfig.animated){
+            this.ZiButton.hide();
+            UIManager.measure(this.props.imgData.handel, (x, y, width, height, pageX, pageY) => {
+                this.aniWidth.setValue(width);
+                this.aniHeight.setValue(height);
+                this.aniPosY.setValue(-this.props.cropHeight / 2 + height / 2 + pageY);
+                this.aniPosX.setValue(-this.props.cropWidth / 2 + width / 2 + pageX);
+                this.onZoomWillShow();
+                this.getImgSize((w,h)=>{
+                    this.width = w;
+                    this.height = h;
+                    this.runAni(0, 0, this.width, this.height,()=>{
+                        this.onZoomDidShow();
+                    });
+                })
+            })
+        }else{
+            this.onZoomWillShow();
+            this.onZoomDidShow();
         }
-        this.isImgLoaded = false;
-        this.isShowAniFinish = false;
-            UIManager.measure(this.props.imgData.ctrHandel, (x, y, width, height, pageX, pageY) => {
-            this.refZoomAni.init(this.props.imgData.small_path,pageX,pageY,width,height,true);
-            if (this.width != 0 && this.height != 0){
-                if (this.props.imgData.type == SFZoomViewConfig.ZOOM_TYPE_LONG_IMG){
-                    this.refZoomAni.show((this.props.cropWidth-this.width)/2,0,this.width,this.height);
-                }else{
-                    this.refZoomAni.show(0,(this.props.cropHeight-this.height)/2,this.width,this.height);
-                }
 
-            }else{
-                if (this.props.imgData.type == SFZoomViewConfig.ZOOM_TYPE_LONG_IMG){
-                    var toWidth = this.props.cropHeight*width/height;
-                    this.refZoomAni.show((this.props.cropWidth-toWidth)/2,0,toWidth,this.props.cropHeight);
-                }else{
-                    var toHeight = this.props.cropWidth*height/width;
-                    this.refZoomAni.show(0,(this.props.cropHeight-toHeight)/2,this.props.cropWidth,toHeight);
-                }
-            }
-
-        })
     }
     showZoomFadeOut = () => {
-        if (SFZoomViewConfig.is_show_ani == false){
+        if (SFZiConfig.animated){
+            UIManager.measure(this.props.imgData.handel, (x, y, width, height, pageX, pageY) => {
+                this.onZoomWillUnshow();
+                this.runAni(pageX+width/2-this.props.cropWidth/2,pageY+height/2-this.props.cropHeight/2,width,height,()=>{
+                    this.onHide();
+                });
+            })
+        }else{
             this.onHide();
-            return;
         }
-        UIManager.measure(this.props.imgData.ctrHandel, (x, y, width, height, pageX, pageY) => {
-            var w = this.width*this.scale;
-            var h = this.height*this.scale;
-            var x = this.posX+(this.props.cropWidth-w)/2;
-            var y = this.posY+(this.props.cropHeight-h)/2;
-            this.refZoomAni.init(this.props.imgData.small_path,x,y,w,h,false);
-            this.refZoomAni.show(pageX,pageY,width,height);
-        })
+
+    }
+    onZoomDidShow = () => {
+        this.props.onAniZoomBeginFinish();
+        this.ZiButton.show();
+    }
+    onZoomWillShow = () => {
+        this.props.onAniZoomBegin()
+    }
+    onZoomWillUnshow = () => {
+        this.props.onAniZoomEnd();
+        this.ZiButton.hide();
     }
     render() {
         var imgSrc;
-        if (typeof(this.props.imgData.big_path) == 'string'){
-            imgSrc = {uri:this.props.imgData.big_path}
+        if (typeof(this.props.imgData.source) == 'string'){
+            imgSrc = {uri:this.props.imgData.source}
         }else{
-            imgSrc = this.props.imgData.big_path;
+            imgSrc = this.props.imgData.source;
         }
-        var opacity = 0;
-        if (this.state.isShow){
-            opacity = 1;
+
+        var marginLeft = 0;
+        if (this.props.index > 0){
+            marginLeft = 10;
         }
         return (
-            <View {...this._panResponder.panHandlers} style={{
+            <View style={{
                 width:this.props.cropWidth,
                 height:this.props.cropHeight,
-                backgroundColor:'transparent',
-                alignItems:'center',
-                justifyContent:'center',
-            }}
-
-            >
-                <Animated.Image
-                    onLoadStart={()=>{
-                        this.setState({loadding:true})
-                    }}
-                    onLoadEnd={()=>{
-                        this.setState({loadding:false})
-                        this.isImgLoaded = true;
-                        if (this.props.firstIndex == this.props.index){
-                            if (this.isShowAniFinish && this.isImgLoaded){
-                                this.refZoomAni.hide();
-                                this.setState({isShow:true})
-                            }
-                        }else{
-                            this.setState({isShow:true})
-                        }
-
-                    }}
-                    source={imgSrc}
-                    style={{
-                        opacity:opacity,
-                        width:this.aniWidth,
-                        height:this.aniHeight,
-                        transform:[{scale:this.aniScale},{translateX:this.aniPosX},{translateY:this.aniPosY}]
+                marginLeft:marginLeft
+            }}>
+                <View {...this._panResponder.panHandlers} style={{
+                    width:this.props.cropWidth,
+                    height:this.props.cropHeight,
+                    backgroundColor:'transparent',
+                    alignItems:'center',
+                    justifyContent:'center'
                 }}>
-                </Animated.Image>
-                <SFZoomShowAnimated ref={(ref) => {this.refZoomAni = ref}}
-                                    cropWidth={this.props.cropWidth}
-                                    cropHeight={this.props.cropHeight}
-                                    onShowBegin={this.onAniZoomBegin}
-                                    onShowEnd={this.onAniZoomEnd}
-                />
+                    <Animated.Image
+                        onLoadStart={()=>{
+                            this.setState({loadding:true})
+                        }}
+                        onLoadEnd={()=>{
+                            this.setState({loadding:false})
+                        }}
+                        source={imgSrc}
+                        style={{
+                            width:this.aniWidth,
+                            height:this.aniHeight,
+                            transform:[{scale:this.aniScale},{translateX:this.aniPosX},{translateY:this.aniPosY}]
+                        }}>
+                    </Animated.Image>
+                    {this.render_loadding()}
+                </View>
+                <SFZiButton
+                    ref={(ref)=>{this.ZiButton = ref}}
+                    cropWidth={this.props.cropWidth}
+                    cropHeight={this.props.cropHeight}
+                    imgData={this.props.imgData}/>
 
-                {this.render_loadding()}
             </View>
         )
     }
@@ -287,6 +287,8 @@ export default class SFZoomImage extends Component {
         this.timer && clearInterval(this.timer)
     }
     onPanResponderMove = (evt,gestureState) => {
+
+
 
         // x 位移
         let diffX = gestureState.dx - this.lastPosX
@@ -360,6 +362,7 @@ export default class SFZoomImage extends Component {
             }
 
         }else{
+
             this.checkAllowZoom()
 
             //两指缩放移动  阻尼效果
@@ -394,6 +397,11 @@ export default class SFZoomImage extends Component {
 
     }
     onPanResponderZoom = (evt,gestureState) => {
+        if (evt.nativeEvent.touches.length >= 2){
+            if (this.props.imgData.type != SFZiConfig.type_img){
+                return;
+            }
+        }
         if (this.isParentOuter){
             return;
         }
@@ -435,14 +443,6 @@ export default class SFZoomImage extends Component {
         if (zoom > 5){
             zoom = 5;
         }
-        // 找到两手中心点距离页面中心的位移
-        // const centerDiffX = (touch1.pageX +touch2.pageX) / 2 - this.props.cropWidth / 2
-        // const centerDiffY = (touch1.pageY + touch2.pageY) / 2 - this.props.cropHeight / 2
-
-        // this.posX -= centerDiffX*diff;
-        // this.posY -= centerDiffY*diff;
-        // this.aniPosX.setValue(this.posX);
-        // this.aniPosY.setValue(this.posY);
 
         this.scale = zoom;
 
@@ -465,15 +465,15 @@ export default class SFZoomImage extends Component {
 
 
         //判断是否需要更换图片
-        if (this.horizontalWholeOuterCounter != 0 || this.props.imgData.type == SFZoomViewConfig.ZOOM_TYPE_LONG_IMG){
-            if (gestureState.vx > SFZoomViewConfig.max_speed_x){
+        if (this.horizontalWholeOuterCounter != 0 || this.props.imgData.type == SFZiConfig.type_long_img){
+            if (gestureState.vx > SFZiConfig.max_speed_x){
                 this.onLast()
-            }else if (gestureState.vx < -SFZoomViewConfig.max_speed_x) {
+            }else if (gestureState.vx < -SFZiConfig.max_speed_x) {
                 this.onNext()
             }else{
-                if (this.horizontalWholeOuterCounter < -SFZoomViewConfig.max_move_x/this.scale){
+                if (this.horizontalWholeOuterCounter < -SFZiConfig.max_move_x/this.scale){
                     this.onNext()
-                }else if (this.horizontalWholeOuterCounter > SFZoomViewConfig.max_move_x/this.scale){
+                }else if (this.horizontalWholeOuterCounter > SFZiConfig.max_move_x/this.scale){
                     this.onLast()
                 }else{
                     this.onRecover()
@@ -631,6 +631,4 @@ export default class SFZoomImage extends Component {
     }
 }
 
-const styles = StyleSheet.create(
 
-)

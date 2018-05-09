@@ -19,7 +19,7 @@ const btnPlay = require('./img/play.png');
 const btnPause = require('./img/pause.png');
 const thumbImage = require('./img/thumbImage.png');
 const btnClose = require('./img/close.png');
-export default class SFZoomVideo extends Component {
+export default class SFZiVideo extends Component {
 
     constructor(props) {
         super(props);

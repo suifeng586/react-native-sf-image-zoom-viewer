@@ -12,7 +12,7 @@ const resolveAssetSource = Image.resolveAssetSource;
 
 var dw = Dimensions.get('window').width;
 var dh = Dimensions.get('window').height;
-export default class SFZoomBigImage extends Component {
+export default class SFZiLongImage extends Component {
 
     constructor(props) {
         super(props)

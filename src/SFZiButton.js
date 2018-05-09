@@ -7,16 +7,16 @@ import {
     TouchableWithoutFeedback
 } from "react-native";
 import PropTypes from 'prop-types'
-import SFZoomViewConfig from './SFZoomViewConfig'
-import SFZoomBigImage from'./tool/SFZoomBigImage'
-import SFZoomVideo from './tool/SFZoomVideo'
-export default class SFZoomImageButton extends Component {
+import SFZiConfig from './SFZiConfig'
+import SFZiLongImage from'./tool/SFZiLongImage'
+import SFZiVideo from './tool/SFZiVideo'
+export default class SFZiButton extends Component {
 
     constructor(props) {
         super(props)
 
         this.state = {
-
+            isShow:true
         }
     }
     static propTypes = {
@@ -27,30 +27,39 @@ export default class SFZoomImageButton extends Component {
     componentDidMount(){
 
     }
-
+    show =() => {
+        this.setState({
+            isShow:true
+        })
+    }
+    hide = () => {
+        this.setState({
+            isShow:false
+        })
+    }
     clickVideo = () => {
-        this.refVideo.show(this.props.imgData.video_path);
+        this.refVideo.show(this.props.imgData.videoSource);
     }
     clickBigImage = () => {
-        this.refBigImage.show(this.props.imgData.big_path);
+        this.refBigImage.show(this.props.imgData.source);
     }
     render_buttons = () => {
-        if (this.props.imgData.type == SFZoomViewConfig.ZOOM_TYPE_VIDEO){
+        if (this.props.imgData.type == SFZiConfig.type_video){
             return(
                 <TouchableWithoutFeedback onPress={this.clickVideo}>
                     <Image source={require('./img/play.png')} style={{
-                        width:80,
-                        height:80,
+                        width:60,
+                        height:60,
                     }}></Image>
                 </TouchableWithoutFeedback>
 
             )
-        }else if (this.props.imgData.type == SFZoomViewConfig.ZOOM_TYPE_LONG_IMG){
+        }else if (this.props.imgData.type == SFZiConfig.type_long_img){
             return(
                 <TouchableWithoutFeedback onPress={this.clickBigImage}>
                     <Image source={require('./img/big.png')} style={{
-                        width:80,
-                        height:80,
+                        width:60,
+                        height:60,
                     }}></Image>
                 </TouchableWithoutFeedback>
             )
@@ -59,19 +68,21 @@ export default class SFZoomImageButton extends Component {
         }
     }
     render() {
-        if (this.props.imgData.type == SFZoomViewConfig.ZOOM_TYPE_VIDEO ||
-            this.props.imgData.type == SFZoomViewConfig.ZOOM_TYPE_LONG_IMG){
+        if (this.state.isShow == false){
+            return null;
+        }
+        if (this.props.imgData.type != SFZiConfig.type_img){
             return(
                 <View style={{
-                    width:80,
-                    height:80,
+                    width:60,
+                    height:60,
                     position:'absolute',
-                    left:(this.props.cropWidth-80)/2,
-                    top:(this.props.cropHeight-80)/2
+                    left:(this.props.cropWidth-60)/2,
+                    top:(this.props.cropHeight-60)/2
                 }}>
                     {this.render_buttons()}
-                    <SFZoomBigImage ref={(ref) => {this.refBigImage = ref}}/>
-                    <SFZoomVideo ref={(ref) => {this.refVideo = ref}}/>
+                    <SFZiLongImage ref={(ref) => {this.refBigImage = ref}}/>
+                    <SFZiVideo ref={(ref) => {this.refVideo = ref}}/>
                 </View>
             )
         }

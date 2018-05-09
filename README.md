@@ -10,23 +10,21 @@
 # 安装
 * npm install react-native-sf-image-zoom-viewer
 * npm install react-native-video
-* npm install react-native-md5
 * react-native link react-native-video
 
 
 # Props
 |  parameter  |  type  |  required  |   description  |  default  |
 |:-----|:-----|:-----|:-----|:-----|
-|isShowAni|boolean|no|是否显示展示动画|true|
-|isShowShare|boolean|no|是否显示分享按钮|true|
-|onShare|function<br>()=>(index)=>{}|no|点击分享事件|()=>null|
+|width|boolean|no|宽度|屏幕宽度|
+|height|boolean|no|高度|屏幕高度|
+|backgroundColor|string|no|背景颜色|"black"|
 
 
 # Methods
 |  Methods  |  Params  |  Param Types  |   description  |  Example  |
 |:-----|:-----|:-----|:-----|:-----|
-|init|dataSource|array|初始化数据|this.obj.init(dataSource)</br>参数参考例子里的ds数组|
-|show|index|number|显示图片查看器|this.obj.show(0)|
+|showWithData|data,index|array,number|显示图片查看器|this.obj.show(data,0)|
 
 
 # 例子
@@ -43,7 +41,7 @@ import {
     Dimensions,
     Image
 } from 'react-native';
-import {SFZoomView, SFZoomViewConfig} from 'react-native-sf-image-zoom-viewer'
+import {SFZiConfig,SFZiView} from 'react-native-sf-image-zoom-viewer'
 import {UIManager} from 'NativeModules';
 var dw = Dimensions.get('window').width;
 var dh = Dimensions.get('window').height;
@@ -52,7 +50,20 @@ type
 Props = {};
 export default class App extends Component<Props> {
     click = (index) => {
-        this.zoom.show(index);
+        var ds = [];
+                for (var i = 0; i < this.dataSource.length; i++) {
+                    var handel = findNodeHandle(this.refs['img_' + i]);
+                    var subData = this.dataSource[i];
+                    var data = {
+                        source: subData.path,
+                        type: subData.type,
+                        videoSource: subData.video_path,
+                        handel: handel,//SFZiConfig.animated == false时可以不填
+                        des:'那年夏天，我无比憧憬大学；今年夏天，我却无比憧憬那年'+i//SFZiConfig.showDes == false时可以不填
+                    }
+                    ds.push(data);
+                }
+                this.refs.zoom.showWithData(ds,index);
     }
     render_imgs = () => {
         var imgs = []
@@ -146,20 +157,8 @@ export default class App extends Component<Props> {
     }
 
     componentDidMount() {
-        var ds = [];
-        for (var i = 0; i < this.dataSource.length; i++) {
-            var handel = findNodeHandle(this.refs['img_' + i]);//图片的句柄
-            var subData = this.dataSource[i];
-            var data = {
-                big_path: subData.path,//图片大图地址
-                small_path: subData.path,//图片缩略图地址
-                type: subData.type,//图片类型，参考SFZoomViewConfig
-                ctrHandel: handel,//图片控件句柄
-                video_path: subData.video_path//如果是视频需要填入视频地址
-            }
-            ds.push(data);
-        }
-        this.zoom.init(ds);
+
+
     }
 }
 

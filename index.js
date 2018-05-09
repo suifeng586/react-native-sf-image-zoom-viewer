@@ -1,4 +1,4 @@
-import SFZoomView from './src/SFZoomView';
-import SFZoomViewConfig from './src/SFZoomViewConfig';
+import SFZiView from './src/SFZiView'
+import SFZiConfig from './src/SFZiConfig'
 
-export{SFZoomView,SFZoomViewConfig}
+export{SFZiConfig,SFZiView}
