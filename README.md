@@ -19,7 +19,7 @@
 |width|boolean|no|宽度|屏幕宽度|
 |height|boolean|no|高度|屏幕高度|
 |backgroundColor|string|no|背景颜色|"black"|
-|onScroll|func|no|索引发生变化时调用|null|
+|onScroll|func|no|索引发生变化时调用 onScroll(index)|null|
 
 # SFZiConfig
 |  parameter  |  type  |  required  |   description  |  default  |
