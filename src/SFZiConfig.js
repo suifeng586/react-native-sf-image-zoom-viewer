@@ -19,12 +19,15 @@ export default{
     //是否显示底部描述信息
     showDes : true,
 
+    //多张图是否在一个界面里
+    inOneView : true,
 
     //展示图片的类型
     type_img : 0,
     type_video : 1,
-    type_long_img : 2
+    type_long_img : 2,
 
+    firstHandel : null
 
 
 }

@@ -19,6 +19,21 @@
 |width|boolean|no|宽度|屏幕宽度|
 |height|boolean|no|高度|屏幕高度|
 |backgroundColor|string|no|背景颜色|"black"|
+|onScroll|func|no|索引发生变化时调用|null|
+
+# SFZiConfig
+|  parameter  |  type  |  required  |   description  |  default  |
+|:-----|:-----|:-----|:-----|:-----|
+|img_dis|number|no|图片间距|10|
+|max_speed_x|number|no|滑动速度超过多少进入下一页|0.5|
+|max_move_x|number|no|滑动距离超过多少进入下一页|100|
+|show_duration|number|no|动画时间|300|
+|animated|bool|no|是否有显示动画，如果有在数据里对"handel"进行赋值|true|
+|showDes|bool|no|是否显示底部文字，如果有在数据里对"des"进行赋值|true|
+|inOneView|bool|no|所有图片是否在同一个界面中，类似轮播图不再一个界面的需要设置成false|true|
+|type_img|number|no|显示图片类型|0|
+|type_video|number|no|显示图片类型|1|
+|type_long_img|number|no|显示图片类型|2|
 
 
 # Methods
@@ -42,7 +57,6 @@ import {
     Image
 } from 'react-native';
 import {SFZiConfig,SFZiView} from 'react-native-sf-image-zoom-viewer'
-import {UIManager} from 'NativeModules';
 var dw = Dimensions.get('window').width;
 var dh = Dimensions.get('window').height;
 

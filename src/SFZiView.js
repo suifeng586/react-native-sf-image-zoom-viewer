@@ -34,14 +34,15 @@ export default class SFZiView extends Component {
         this.state=({
             isShow:false,
             dataSource:[],
-            curIndex:0
+            curIndex:0,
         })
     }
 
     static propTypes = {
         width:PropTypes.number,
         height:PropTypes.number,
-        backgroundColor: PropTypes.string
+        backgroundColor: PropTypes.string,
+        onScroll: PropTypes.func
     }
     static defaultProps = {
         width:dw,
@@ -62,6 +63,7 @@ export default class SFZiView extends Component {
             isShow:true,
             curIndex:showIndex
         },()=>{
+            SFZiConfig.firstHandel = this.state.dataSource[0].handel;
             var zoomImage = this.refs['zoom_img_'+this.state.curIndex ];
             zoomImage.showZoomFadeIn();
             this.scrollToIndex(this.state.curIndex,false)
@@ -92,6 +94,9 @@ export default class SFZiView extends Component {
                 duration: 100,
             }).start()
             this.setState({curIndex:index+1});
+            if (this.props.onScroll){
+                this.props.onScroll(index+1)
+            }
             return true
         }else{
             this.onRecover(index);
@@ -106,6 +111,9 @@ export default class SFZiView extends Component {
                 duration: 100,
             }).start()
             this.setState({curIndex:index-1});
+            if (this.props.onScroll){
+                this.props.onScroll(index-1)
+            }
             return true
         }else{
             this.onRecover(index);
