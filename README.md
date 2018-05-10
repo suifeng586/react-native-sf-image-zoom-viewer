@@ -8,7 +8,7 @@
 
 
 # 安装
-* npm install react-native-sf-image-zoom-viewer
+* npm install react-native-sf-zoom-image-viewer
 * npm install react-native-video
 * react-native link react-native-video
 
@@ -103,7 +103,7 @@ export default class App extends Component<Props> {
                 }}>
                     {this.render_imgs()}
                 </View>
-                <SFZoomView ref={(ref)=> {
+                <SFZiView ref={(ref)=> {
                     this.zoom = ref
                 }}/>
 
