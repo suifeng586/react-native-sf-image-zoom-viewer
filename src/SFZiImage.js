@@ -208,9 +208,6 @@ export default class SFZiImage extends Component {
     showZoomFadeOut = () => {
         if (SFZiConfig.animated){
             var handel = this.props.imgData.handel;
-            if (SFZiConfig.inOneView == false){
-                handel = SFZiConfig.firstHandel;
-            }
             UIManager.measure(handel, (x, y, width, height, pageX, pageY) => {
                 this.onZoomWillUnshow();
                 this.runAni(pageX+width/2-this.props.cropWidth/2,pageY+height/2-this.props.cropHeight/2,width,height,()=>{

@@ -69,7 +69,6 @@ export default class SFZiView extends Component {
             this.scrollToIndex(this.state.curIndex,false)
 
         })
-        console.log('SFZiConfig.img_dis:'+SFZiConfig.img_dis)
     }
 
     scrollToIndex = (index,animated) => {

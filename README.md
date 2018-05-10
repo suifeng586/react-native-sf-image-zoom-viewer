@@ -30,7 +30,6 @@
 |show_duration|number|no|动画时间|300|
 |animated|bool|no|是否有显示动画，如果有在数据里对"handel"进行赋值|true|
 |showDes|bool|no|是否显示底部文字，如果有在数据里对"des"进行赋值|true|
-|inOneView|bool|no|所有图片是否在同一个界面中，类似轮播图不再一个界面的需要设置成false|true|
 |type_img|number|no|显示图片类型|0|
 |type_video|number|no|显示图片类型|1|
 |type_long_img|number|no|显示图片类型|2|
@@ -72,7 +71,7 @@ export default class App extends Component<Props> {
                         source: subData.path,
                         type: subData.type,
                         videoSource: subData.video_path,
-                        handel: handel,//SFZiConfig.animated == false时可以不填
+                        handel: handel,//SFZiConfig.animated == false时可以不填(为了获取控件位置信息)
                         des:'那年夏天，我无比憧憬大学；今年夏天，我却无比憧憬那年'+i//SFZiConfig.showDes == false时可以不填
                     }
                     ds.push(data);

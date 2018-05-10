@@ -27,8 +27,6 @@ export default{
     type_video : 1,
     type_long_img : 2,
 
-    firstHandel : null
-
 
 }
 
