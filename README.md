@@ -1,4 +1,4 @@
-# react-native-sf-image-zoom-viewer
+# react-native-sf-zoom-image-viewer
 
 
 # 图片查看器，支持手势缩放、分享
