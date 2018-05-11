@@ -55,7 +55,7 @@ import {
     Dimensions,
     Image
 } from 'react-native';
-import {SFZiConfig,SFZiView} from 'react-native-sf-image-zoom-viewer'
+import {SFZiConfig,SFZiView} from 'react-native-sf-zoom-image-viewer'
 var dw = Dimensions.get('window').width;
 var dh = Dimensions.get('window').height;
 
