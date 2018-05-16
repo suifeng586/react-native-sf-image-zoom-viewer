@@ -18,7 +18,8 @@ import {
     Text,
     PanResponder,
     Animated,
-    Modal
+    Modal,
+    StatusBar
 } from "react-native";
 import PropTypes from 'prop-types'
 import SFZiImage from "./SFZiImage"
@@ -63,7 +64,6 @@ export default class SFZiView extends Component {
             isShow:true,
             curIndex:showIndex
         },()=>{
-            SFZiConfig.firstHandel = this.state.dataSource[0].handel;
             var zoomImage = this.refs['zoom_img_'+this.state.curIndex ];
             zoomImage.showZoomFadeIn();
             this.scrollToIndex(this.state.curIndex,false)
@@ -239,6 +239,11 @@ export default class SFZiView extends Component {
                     width: this.props.width,
                     height: this.props.height,
                 }}>
+                    <StatusBar
+                        hidden={false}
+                        backgroundColor={this.props.backgroundColor}
+                        translucent={true}
+                    />
                     {/*背景*/}
                     <Animated.View style={{
                         backgroundColor: this.props.backgroundColor,
